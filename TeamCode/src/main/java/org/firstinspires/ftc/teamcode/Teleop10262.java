@@ -13,11 +13,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
  */
 @TeleOp(name="Teleop 10262", group="FTC 10262")
 public class Teleop10262 extends Base10262 {
-    private static final double ELEVATOR_DEADZONE = 0.1;
-    private static final double MAX_ELEVATOR_ADJUST = 0.2;
-    private static final int SAMPLES = 50;
-    protected static final double REVERSE_POWER = 0.4;
-    protected static final double MAX_INTAKE_POWER = 0.6;
 
     private int counter = 0;
     private long last = 0;
@@ -39,7 +34,6 @@ public class Teleop10262 extends Base10262 {
         }
     };
 
-    private static final double WIGGLE_WAIT = 0.4;
     ElapsedTime wiggle_timer;
     WiggleState wiggle_state = WiggleState.OPEN;
 
@@ -53,14 +47,9 @@ public class Teleop10262 extends Base10262 {
 
         wiggle_timer = new ElapsedTime();
         tray_timer = new ElapsedTime();
-
-        set_tray_angle(TRAY_COLLECT_POSITION);
-        open_tray();
         last = System.nanoTime();
 
-        jewel_arm.setPosition(JEWEL_ARM_RETRACTED);
-
-        tray_ramp = new TimeRampValue(TRAY_COLLECT_POSITION, TRAY_COLLECT_POSITION, 1,
+        tray_ramp = new TimeRampValue(Constants10262.TRAY_COLLECT_POSITION, Constants10262.TRAY_COLLECT_POSITION, 1,
                 new Rampable() {
                     @Override
                     public void tick(double value) {
@@ -73,14 +62,13 @@ public class Teleop10262 extends Base10262 {
     }
 
     @Override
-    public void init_loop() {}
+    public void init_loop() {
+        super.init_loop();
 
-    @Override
-    public void start() {
-        jewel_arm.setPosition(JEWEL_ARM_RETRACTED);
-
-        set_tray_angle(TRAY_COLLECT_POSITION);
+        // Do these in init_loop so we can see the adjustments
+        set_tray_angle(Constants10262.TRAY_COLLECT_POSITION);
         open_tray();
+        jewel_arm.setPosition(Constants10262.JEWEL_ARM_RETRACTED);
     }
 
     @Override
@@ -101,15 +89,15 @@ public class Teleop10262 extends Base10262 {
 
     private void jewel_arm_loop() {
         if (gamepad2.back) {
-            jewel_arm.setPosition(JEWEL_ARM_DEPLOYED);
+            jewel_arm.setPosition(Constants10262.JEWEL_ARM_DEPLOYED);
         } else {
-            jewel_arm.setPosition(JEWEL_ARM_RETRACTED);
+            jewel_arm.setPosition(Constants10262.JEWEL_ARM_RETRACTED);
         }
     }
 
     protected void timing_info_loop() {
-        if (counter++ % SAMPLES == 0) {
-            telemetry.addData("loop time: ", total / SAMPLES / 1000.0);
+        if (counter++ % Constants10262.SAMPLES == 0) {
+            telemetry.addData("loop time: ", total / Constants10262.SAMPLES / 1000.0);
             /*
             org.firstinspires.ftc.robotcore.external.navigation.Position pos = imu.getPosition();
             Orientation angles = imu.getAngularOrientation();
@@ -176,18 +164,18 @@ public class Teleop10262 extends Base10262 {
 
             case TO_DRIVE:
                 if (tray_timer.seconds() > 0.5) {
-                    tray_ramp.reset(tray_position(), TRAY_DRIVE_POSTION, 500);
+                    tray_ramp.reset(tray_position(), Constants10262.TRAY_DRIVE_POSTION, 500);
                     tray_state = TrayState.DRIVING;
                 }
                 break;
 
             case TO_DEPLOY:
-                tray_ramp.reset(tray_position(), TRAY_DEPLOY_POSITION, 500);
+                tray_ramp.reset(tray_position(), Constants10262.TRAY_DEPLOY_POSITION, 500);
                 tray_state = TrayState.DEPLOYED;
                 break;
 
             case TO_COLLECT:
-                tray_ramp.reset(tray_position(), TRAY_COLLECT_POSITION, 500);
+                tray_ramp.reset(tray_position(), Constants10262.TRAY_COLLECT_POSITION, 500);
                 tray_ramp.setAtFinish(new Runnable() {
                     @Override
                     public void run() {
@@ -217,13 +205,13 @@ public class Teleop10262 extends Base10262 {
                     break;
 
                 case SHIFT_LEFT:
-                    left_pinch.setPosition(TRAY_PINCH_CLOSE);
-                    right_pinch.setPosition(TRAY_PINCH_OPEN);
+                    left_pinch.setPosition(Constants10262.TRAY_PINCH_CLOSE);
+                    right_pinch.setPosition(Constants10262.TRAY_PINCH_OPEN);
                     break;
 
                 case SHIFT_RIGHT:
-                    left_pinch.setPosition(TRAY_PINCH_OPEN);
-                    right_pinch.setPosition(TRAY_PINCH_CLOSE);
+                    left_pinch.setPosition(Constants10262.TRAY_PINCH_OPEN);
+                    right_pinch.setPosition(Constants10262.TRAY_PINCH_CLOSE);
                     break;
 
                 case CLOSED:
@@ -231,7 +219,7 @@ public class Teleop10262 extends Base10262 {
                     break;
             }
 
-            if (wiggle_timer.seconds() > WIGGLE_WAIT) {
+            if (wiggle_timer.seconds() > Constants10262.WIGGLE_WAIT) {
                 wiggle_state = wiggle_state.next();
                 wiggle_timer.reset();
             }
@@ -252,10 +240,10 @@ public class Teleop10262 extends Base10262 {
     protected void elevator_loop() {
         double elevator_power = gamepad2.left_stick_y;
         if (gamepad2.start) {
-            elevator_power = gamepad2.left_stick_x * MAX_ELEVATOR_ADJUST;
+            elevator_power = gamepad2.left_stick_x * Constants10262.MAX_ELEVATOR_ADJUST;
             right_elevator.setPower(-elevator_power);
             left_elevator.setPower(elevator_power);
-        } else if (Math.abs(elevator_power) > ELEVATOR_DEADZONE) {
+        } else if (Math.abs(elevator_power) > Constants10262.ELEVATOR_DEADZONE) {
             right_elevator.setPower(-elevator_power);
             left_elevator.setPower(-elevator_power);
         } else {
@@ -272,17 +260,17 @@ public class Teleop10262 extends Base10262 {
         }
 
         if (gamepad2.left_bumper) {
-            left_intake.setPower(-MAX_INTAKE_POWER * reverse);
-            right_intake.setPower(MAX_INTAKE_POWER * reverse);
+            left_intake.setPower(-Constants10262.MAX_INTAKE_POWER * reverse);
+            right_intake.setPower(Constants10262.MAX_INTAKE_POWER * reverse);
         } else if (gamepad2.right_bumper) {
-            left_intake.setPower(REVERSE_POWER * reverse);
-            right_intake.setPower(-REVERSE_POWER * reverse);
+            left_intake.setPower(Constants10262.REVERSE_POWER * reverse);
+            right_intake.setPower(-Constants10262.REVERSE_POWER * reverse);
         } else if (in_wiggle) {
-            left_intake.setPower(-SLOW_COLLECT);
-            right_intake.setPower(SLOW_COLLECT);
+            left_intake.setPower(-Constants10262.SLOW_COLLECT);
+            right_intake.setPower(Constants10262.SLOW_COLLECT);
         } else {
-            left_intake.setPower(gamepad2.left_trigger * -MAX_INTAKE_POWER * reverse);
-            right_intake.setPower(gamepad2.right_trigger * MAX_INTAKE_POWER * reverse);
+            left_intake.setPower(gamepad2.left_trigger * -Constants10262.MAX_INTAKE_POWER * reverse);
+            right_intake.setPower(gamepad2.right_trigger * Constants10262.MAX_INTAKE_POWER * reverse);
         }
     }
 

@@ -15,9 +15,6 @@ import static org.firstinspires.ftc.teamcode.Auton10262.State.RAMP_UP;
  */
 @Autonomous(name="Blue Auton 10262", group="Pioneer 10262")
 public class BlueAuton10262 extends Auton10262 {
-    protected static double RAMP_TIME = 1.0;
-    protected static double DRIVE_SPEED = 0.8;
-
     /**
      * Constructor
      */
@@ -39,7 +36,7 @@ public class BlueAuton10262 extends Auton10262 {
                 break;
 
             case FOUND_BLUE_JEWEL:
-                if (time_in_state < GEM_DRIVE_DURATION) {
+                if (time_in_state < Constants10262.GEM_DRIVE_DURATION) {
                     set_drive_power(-0.3, -0.3);
                 } else {
                     state = RAISE_ARM;
@@ -47,7 +44,7 @@ public class BlueAuton10262 extends Auton10262 {
                 break;
 
             case FOUND_RED_JEWEL:
-                if (time_in_state < GEM_DRIVE_DURATION) {
+                if (time_in_state < Constants10262.GEM_DRIVE_DURATION) {
                     set_drive_power(0.3, 0.3);
                 } else {
                     state = RAISE_ARM;
@@ -60,21 +57,21 @@ public class BlueAuton10262 extends Auton10262 {
                 break;
 
             case RAMP_UP:
-                if (time_in_state > RAMP_TIME) {
+                if (time_in_state > Constants10262.RAMP_TIME) {
                     state = State.RAMP_DOWN;
                 } else {
-                    double percent = time_in_state / RAMP_TIME;
-                    double power = DRIVE_SPEED * percent;
+                    double percent = time_in_state / Constants10262.RAMP_TIME;
+                    double power = Constants10262.DRIVE_SPEED * percent;
                     set_drive_power(power, power);
                 }
                 break;
 
             case RAMP_DOWN:
-                if (time_in_state > RAMP_TIME) {
+                if (time_in_state > Constants10262.RAMP_TIME) {
                     state = State.STOP;
                 } else {
-                    double percent = 1.0 - (time_in_state / RAMP_TIME);
-                    double power = DRIVE_SPEED * percent;
+                    double percent = 1.0 - (time_in_state / Constants10262.RAMP_TIME);
+                    double power = Constants10262.DRIVE_SPEED * percent;
                     set_drive_power(power, power);
                 }
                 break;

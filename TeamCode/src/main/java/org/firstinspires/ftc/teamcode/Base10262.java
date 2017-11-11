@@ -2,6 +2,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.content.Context;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -10,26 +12,15 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /**
  * Base code common to all other 10262 opmode
  */
 @Disabled()
-public abstract class Base10262 extends OpMode {
-    protected static final double JEWEL_ARM_DEPLOYED = 0.1;
-    protected static final double JEWEL_ARM_RETRACTED = 0.9;
-    protected static final double SLOW_COLLECT = 0.4;
-
-    protected static final double TRAY_EPSILON = 0.05;
-    protected static final double TRAY_DEPLOY_POSITION = 1;
-    protected static final double TRAY_DRIVE_POSTION = 0.45;
-    protected static final double TRAY_COLLECT_POSITION = 0;
-    protected static final double TRAY_DROP_POSITION = 1;
-    protected static final double TRAY_PINCH_OPEN = 0;
-    protected static final double TRAY_PINCH_MOVE = 0.2;
-    protected static final double TRAY_PINCH_CLOSE = 1;
-
-    protected static final double COLOR_SENSOR_POS_UP = 1.0;
-    protected static final double COLOR_SENSOR_POS_DOWN = 0.0;
+public class Base10262 extends OpMode {
+    private static Context appContext;
+    protected MenuController menu_controller = null;
 
     protected static DcMotor left_drive = null;
     protected static DcMotor right_drive = null;
@@ -68,6 +59,9 @@ public abstract class Base10262 extends OpMode {
 	  */
     @Override
     public void init() {
+        appContext = hardwareMap.appContext;
+        new Constants10262();
+
         left_drive = hardwareMap.dcMotor.get("left drive");
         right_drive = hardwareMap.dcMotor.get("right drive");
         // Do we want brake mode here?
@@ -97,6 +91,26 @@ public abstract class Base10262 extends OpMode {
         jewel_arm = hardwareMap.servo.get("jewel arm");
         jewel_color = hardwareMap.get(ColorSensor.class, "jewel color");
 
+        menu_controller = new MenuController();
+    }
+
+    @Override
+    public void init_loop() {
+        menu_controller.loop(telemetry, gamepad1);
+    }
+
+    @Override
+    public void start() {
+        telemetry.clearAll();
+    }
+
+    @Override
+    public void loop() {
+        // do nothing
+    }
+
+    static Context getContext() {
+        return appContext;
     }
 
     /*
@@ -126,11 +140,11 @@ public abstract class Base10262 extends OpMode {
     }
 
     protected void open_tray() {
-        set_tray_pinch(TRAY_PINCH_OPEN);
+        set_tray_pinch(Constants10262.TRAY_PINCH_OPEN);
     }
 
     protected void close_tray() {
-        set_tray_pinch(TRAY_PINCH_CLOSE);
+        set_tray_pinch(Constants10262.TRAY_PINCH_CLOSE);
     }
 
     protected void set_tray_angle(double pos) {
@@ -143,11 +157,11 @@ public abstract class Base10262 extends OpMode {
     }
 
     protected boolean tray_deployed() {
-        return Math.abs(tray_position() - TRAY_DEPLOY_POSITION) < TRAY_EPSILON;
+        return Math.abs(tray_position() - Constants10262.TRAY_DEPLOY_POSITION) < Constants10262.TRAY_EPSILON;
     }
 
     protected boolean tray_collecting() {
-        return Math.abs(tray_position() - TRAY_COLLECT_POSITION) < TRAY_EPSILON;
+        return Math.abs(tray_position() - Constants10262.TRAY_COLLECT_POSITION) < Constants10262.TRAY_EPSILON;
     }
 
     /**
