@@ -4,15 +4,11 @@ package org.firstinspires.ftc.teamcode;
 
 import android.content.Context;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * Base code common to all other 10262 opmode
@@ -60,7 +56,7 @@ public class Base10262 extends OpMode {
     @Override
     public void init() {
         appContext = hardwareMap.appContext;
-        new Constants10262();
+        new Calibration10262();
 
         left_drive = hardwareMap.dcMotor.get("left drive");
         right_drive = hardwareMap.dcMotor.get("right drive");
@@ -140,11 +136,11 @@ public class Base10262 extends OpMode {
     }
 
     protected void open_tray() {
-        set_tray_pinch(Constants10262.TRAY_PINCH_OPEN);
+        set_tray_pinch(Calibration10262.TRAY_PINCH_OPEN);
     }
 
     protected void close_tray() {
-        set_tray_pinch(Constants10262.TRAY_PINCH_CLOSE);
+        set_tray_pinch(Calibration10262.TRAY_PINCH_CLOSE);
     }
 
     protected void set_tray_angle(double pos) {
@@ -157,11 +153,11 @@ public class Base10262 extends OpMode {
     }
 
     protected boolean tray_deployed() {
-        return Math.abs(tray_position() - Constants10262.TRAY_DEPLOY_POSITION) < Constants10262.TRAY_EPSILON;
+        return Math.abs(tray_position() - Calibration10262.TRAY_DEPLOY_POSITION) < Calibration10262.TRAY_EPSILON;
     }
 
     protected boolean tray_collecting() {
-        return Math.abs(tray_position() - Constants10262.TRAY_COLLECT_POSITION) < Constants10262.TRAY_EPSILON;
+        return Math.abs(tray_position() - Calibration10262.TRAY_COLLECT_POSITION) < Calibration10262.TRAY_EPSILON;
     }
 
     /**

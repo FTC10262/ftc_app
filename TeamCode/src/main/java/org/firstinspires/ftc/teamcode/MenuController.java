@@ -16,7 +16,7 @@ public class MenuController {
     private int index = 0;
 
     public MenuController() {
-        menu_items = (new Constants10262().getStaticFields());
+        menu_items = (new Calibration10262().getStaticFields());
     }
 
     public Field getCurrentField() {
@@ -58,7 +58,7 @@ public class MenuController {
             } else if (gamepad.b) {
                 setValue(1);
             } else if (gamepad.left_bumper && gamepad.right_bumper) {
-                (new Constants10262()).writeToFile();
+                (new Calibration10262()).writeToFile();
                 telemetry.addData("Calibrate", "saved");
             } else if (Math.abs(gamepad.right_stick_x) > 0.1) {
                 setValue(gamepad.right_stick_x);

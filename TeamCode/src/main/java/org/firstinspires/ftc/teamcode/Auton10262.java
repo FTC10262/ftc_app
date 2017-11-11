@@ -6,12 +6,8 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.RobotLog;
-
-import android.content.Context;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.matrices.MatrixF;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -19,14 +15,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
-import org.firstinspires.ftc.robotcore.external.navigation.VuMarkInstanceId;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.firstinspires.ftc.teamcode.Auton10262.State.*;
 
@@ -173,7 +165,7 @@ public class Auton10262 extends Base10262 {
     @Override
     public void init_loop() {
         super.init_loop();
-        jewel_arm.setPosition(Constants10262.JEWEL_ARM_RETRACTED);
+        jewel_arm.setPosition(Calibration10262.JEWEL_ARM_RETRACTED);
 
         imu_loop();
         if (looking_for_vumark) {
@@ -194,7 +186,7 @@ public class Auton10262 extends Base10262 {
                 break;
 
             case LOWER_ARM:
-                jewel_arm.setPosition(Constants10262.COLOR_SENSOR_POS_DOWN);
+                jewel_arm.setPosition(Calibration10262.COLOR_SENSOR_POS_DOWN);
                 if (time_in_state > 1.0) {
                     return WAIT_FOR_COLOR_SENSOR;
                 }
@@ -220,7 +212,7 @@ public class Auton10262 extends Base10262 {
                 break;
 
             case RAISE_ARM:
-                jewel_arm.setPosition(Constants10262.COLOR_SENSOR_POS_UP);
+                jewel_arm.setPosition(Calibration10262.COLOR_SENSOR_POS_UP);
                 break;
 
             case REALIGN_ROBOT:
