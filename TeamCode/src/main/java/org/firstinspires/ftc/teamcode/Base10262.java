@@ -61,8 +61,12 @@ public class Base10262 extends OpMode {
         left_drive = hardwareMap.dcMotor.get("left drive");
         right_drive = hardwareMap.dcMotor.get("right drive");
         // Do we want brake mode here?
-        left_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        right_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        DcMotor.ZeroPowerBehavior drive_mode = DcMotor.ZeroPowerBehavior.FLOAT;
+        if (Calibration10262.LOCK_DRIVE_WHEELS) {
+            drive_mode = DcMotor.ZeroPowerBehavior.BRAKE;
+        }
+        left_drive.setZeroPowerBehavior(drive_mode);
+        right_drive.setZeroPowerBehavior(drive_mode);
 
         left_intake = hardwareMap.dcMotor.get("left intake");
         right_intake = hardwareMap.dcMotor.get("right intake");

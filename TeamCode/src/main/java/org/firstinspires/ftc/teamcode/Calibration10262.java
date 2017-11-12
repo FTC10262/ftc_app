@@ -47,6 +47,8 @@ public class Calibration10262 extends ConstantsBase {
     public static double MAX_INTAKE_POWER = 0.6;
     public static double WIGGLE_WAIT = 0.4;
 
+    public static boolean LOCK_DRIVE_WHEELS = false;
+
     public Calibration10262() {
         readFromFile();
     }
