@@ -68,10 +68,14 @@ public class Base10262 extends OpMode {
         left_drive.setZeroPowerBehavior(drive_mode);
         right_drive.setZeroPowerBehavior(drive_mode);
 
+        DcMotor.ZeroPowerBehavior intake_mode = DcMotor.ZeroPowerBehavior.FLOAT;
+        if (Calibration10262.LOCK_INTAKE_WHEELS) {
+            intake_mode = DcMotor.ZeroPowerBehavior.BRAKE;
+        }
         left_intake = hardwareMap.dcMotor.get("left intake");
         right_intake = hardwareMap.dcMotor.get("right intake");
-        left_intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        right_intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        left_intake.setZeroPowerBehavior(intake_mode);
+        right_intake.setZeroPowerBehavior(intake_mode);
 
         left_elevator = hardwareMap.dcMotor.get("left elevator");
         right_elevator = hardwareMap.dcMotor.get("right elevator");
