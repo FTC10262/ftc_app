@@ -18,8 +18,10 @@ public class Base10262 extends OpMode {
     private static Context appContext;
     protected MenuController menu_controller = null;
 
-    protected static DcMotor left_drive = null;
-    protected static DcMotor right_drive = null;
+    // Make private to ensure that our set_power routine
+    // is used and power ramping is implemented
+    private static DcMotor left_drive = null;
+    private static DcMotor right_drive = null;
 
     protected static DcMotor left_intake = null;
     protected static DcMotor right_intake = null;
@@ -172,16 +174,44 @@ public class Base10262 extends OpMode {
      * Limit motor values to the -1.0 to +1.0 range.
      */
     protected static double limit(double num) {
-        if (num > 1.0) {
-            return 1.0;
+        return limit(-1, 1, num);
+    }
+
+    protected static double limit(double min, double max, double num) {
+        if (num > max) {
+            return max;
         }
-        if (num < -1.0) {
-            return -1.0;
+        if (num < min) {
+            return min;
         }
+
         return num;
     }
 
+    protected static double ramp(double oldVal, double newVal, double maxRamp) {
+        double delta = newVal - oldVal;
+        if (delta > maxRamp) {
+            delta = maxRamp;
+        } else if (delta < -maxRamp) {
+            delta = -maxRamp;
+        }
+        return oldVal + delta;
+    }
+
+    private double prevLeftPower = 0;
+    private double prevRightPower = 0;
+    private long lastSetDrivePower = 0;
     protected void set_drive_power(double left, double right) {
+        if (Calibration10262.RAMP_DRIVE_POWER) {
+            final double maxChangePerMilliSecond = Calibration10262.RAMP_DRIVE_DURATION;
+            final long ticks = System.currentTimeMillis() - lastSetDrivePower;
+            final double maxRamp = Math.max(1, maxChangePerMilliSecond * ticks);
+
+            left = ramp(prevLeftPower, left, maxRamp);
+            right = ramp(prevRightPower, right, maxRamp);
+            prevLeftPower = left;
+            prevRightPower = right;
+        }
         this.left_drive.setPower(-left);
         this.right_drive.setPower(right);
     }

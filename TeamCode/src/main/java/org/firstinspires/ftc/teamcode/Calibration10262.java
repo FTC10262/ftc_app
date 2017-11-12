@@ -50,6 +50,9 @@ public class Calibration10262 extends ConstantsBase {
     public static boolean LOCK_DRIVE_WHEELS = false;
     public static boolean LOCK_INTAKE_WHEELS = true;
 
+    public static boolean RAMP_DRIVE_POWER = true;
+    public static double RAMP_DRIVE_DURATION = 0.75;
+
     public Calibration10262() {
         readFromFile();
     }
