@@ -4,8 +4,8 @@
 
 - [X] Calibration Class
 - [X] Driver Menu System to view/change calibration values
-- [ ] Ramp Drive Speed
+- [X] Ramp Drive Speed
 - [X] Toggle Brake Mode on drive
 - [X] Toggle Brake Mode on collect
-- [ ] Dual collect mode (initial grab vs final intake)
-- [ ] Enable disable imu initialization
+- [X] Put imu and gyro init in separate thread, to protect init time
+- [ ] Dual collect mode (initial grab vs final intake)???
