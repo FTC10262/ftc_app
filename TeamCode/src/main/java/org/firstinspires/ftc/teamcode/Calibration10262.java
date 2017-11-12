@@ -27,7 +27,6 @@ public class Calibration10262 extends ConstantsBase {
     public static double TRAY_DEPLOY_POSITION = 1;
     public static double TRAY_DRIVE_POSTION = 0.45;
     public static double TRAY_COLLECT_POSITION = 0;
-    public static double TRAY_DROP_POSITION = 1;
     public static double TRAY_PINCH_OPEN = 0;
     public static double TRAY_PINCH_MOVE = 0.2;
     public static double TRAY_PINCH_CLOSE = 1;
@@ -43,15 +42,15 @@ public class Calibration10262 extends ConstantsBase {
     public static double ELEVATOR_DEADZONE = 0.1;
     public static double MAX_ELEVATOR_ADJUST = 0.2;
     public static int SAMPLES = 50;
-    public static double REVERSE_POWER = 0.4;
-    public static double MAX_INTAKE_POWER = 0.6;
+    public static double REVERSE_POWER = 0.25;
+    public static double MAX_INTAKE_POWER = 0.4;
     public static double WIGGLE_WAIT = 0.4;
 
     public static boolean LOCK_DRIVE_WHEELS = false;
     public static boolean LOCK_INTAKE_WHEELS = true;
 
     public static boolean RAMP_DRIVE_POWER = true;
-    public static double RAMP_DRIVE_DURATION = 0.75;
+    public static double RAMP_DRIVE_DURATION = 0.0015;
 
     public Calibration10262() {
         readFromFile();
