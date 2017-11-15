@@ -149,6 +149,18 @@ public class Base10262 extends OpMode {
         set_tray_pinch(Calibration10262.TRAY_PINCH_OPEN);
     }
 
+    protected void wide_open_tray() {
+        set_tray_pinch(Calibration10262.TRAY_PINCH_WIDE_OPEN);
+    }
+
+    private double tray_pinch() {
+        return (left_pinch.getPosition() + right_pinch.getPosition()) / 2;
+    }
+
+    protected boolean tray_open() {
+        return (tray_pinch() - Calibration10262.TRAY_PINCH_OPEN) < Calibration10262.TRAY_PINCH_EPSILON;
+    }
+
     protected void close_tray() {
         set_tray_pinch(Calibration10262.TRAY_PINCH_CLOSE);
     }

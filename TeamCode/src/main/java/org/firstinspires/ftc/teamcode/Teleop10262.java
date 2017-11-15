@@ -162,18 +162,18 @@ public class Teleop10262 extends Base10262 {
 
             case TO_DRIVE:
                 if (tray_timer.seconds() > 0.5) {
-                    tray_ramp.reset(tray_position(), Calibration10262.TRAY_DRIVE_POSTION, 500);
+                    tray_ramp.reset(tray_position(), Calibration10262.TRAY_DRIVE_POSTION, Calibration10262.TRAY_RAMP_DURATION);
                     tray_state = TrayState.DRIVING;
                 }
                 break;
 
             case TO_DEPLOY:
-                tray_ramp.reset(tray_position(), Calibration10262.TRAY_DEPLOY_POSITION, 500);
+                tray_ramp.reset(tray_position(), Calibration10262.TRAY_DEPLOY_POSITION, Calibration10262.TRAY_RAMP_DURATION);
                 tray_state = TrayState.DEPLOYED;
                 break;
 
             case TO_COLLECT:
-                tray_ramp.reset(tray_position(), Calibration10262.TRAY_COLLECT_POSITION, 500);
+                tray_ramp.reset(tray_position(), Calibration10262.TRAY_COLLECT_POSITION, Calibration10262.TRAY_RAMP_DURATION);
                 tray_ramp.setAtFinish(new Runnable() {
                     @Override
                     public void run() {
@@ -195,7 +195,7 @@ public class Teleop10262 extends Base10262 {
             in_wiggle = true;
             switch (wiggle_state) {
                 case OPEN:
-                    open_tray();
+                    wide_open_tray();
                     break;
 
                 case CLOSE:
@@ -225,7 +225,11 @@ public class Teleop10262 extends Base10262 {
             in_wiggle = false;
             open_tray();
         } else if (gamepad2.a) {
-            open_tray();
+            if (tray_deployed()) {
+                wide_open_tray();
+            } else {
+                open_tray();
+            }
         } else if (gamepad2.x) {
             close_tray();
 //        } else if (tray_deployed()) {
