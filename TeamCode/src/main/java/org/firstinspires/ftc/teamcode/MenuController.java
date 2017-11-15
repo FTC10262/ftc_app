@@ -12,11 +12,13 @@ import java.util.List;
  */
 
 public class MenuController {
+    private final ConstantsBase consts;
     private List<Field> menu_items;
     private int index = 0;
 
-    public MenuController() {
-        menu_items = (new Calibration10262().getStaticFields());
+    public MenuController(ConstantsBase consts) {
+        menu_items = (consts.getStaticFields());
+        this.consts = consts;
     }
 
     public Field getCurrentField() {
@@ -30,6 +32,9 @@ public class MenuController {
 
     public Field prevField() {
         index = (index - 1) % menu_items.size();
+        if (index < 0) {
+            index += menu_items.size();
+        }
         return getCurrentField();
     }
 
@@ -46,7 +51,6 @@ public class MenuController {
                 // de-bounce - do nothing
             } else if (gamepad.dpad_up) {
                 nextField();
-
             } else if (gamepad.dpad_down) {
                 prevField();
             } else if (gamepad.dpad_left) {
@@ -58,14 +62,17 @@ public class MenuController {
             } else if (gamepad.b) {
                 setValue(1);
             } else if (gamepad.left_bumper && gamepad.right_bumper) {
-                (new Calibration10262()).writeToFile();
+                consts.writeToFile();
                 telemetry.addData("Calibrate", "saved");
+            } else if (gamepad.start) {
+                consts.readFromFile();
+                telemetry.addData("Calibrate", "reload");
             } else if (Math.abs(gamepad.right_stick_x) > 0.1) {
                 setValue(gamepad.right_stick_x);
             }
             wasPressed = gamepad.dpad_down || gamepad.dpad_up || gamepad.dpad_right ||
                          gamepad.dpad_left || (gamepad.right_bumper && gamepad.left_bumper) ||
-                         gamepad.a || gamepad.b;
+                         gamepad.a || gamepad.b || gamepad.start;
 
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -78,12 +85,16 @@ public class MenuController {
             Class<?> klass = getCurrentField().getType();
             String value = f.get(null).toString();
 
-            if (klass.equals(Integer.class)) {
+            if (klass.equals(Integer.TYPE)) {
                 f.setInt(null, Integer.parseInt(value) - 1);
-            } else if (klass.equals(Double.class)) {
+            } else if (klass.equals(Long.TYPE)) {
+                f.setLong(null, Long.parseLong(value) - 1);
+            } else if (klass.equals(Double.TYPE)) {
                 f.setDouble(null, Double.parseDouble(value) - 0.05);
-            } else if (klass.equals(Boolean.class)) {
+            } else if (klass.equals(Boolean.TYPE)) {
                 f.setBoolean(null, !Boolean.parseBoolean(value));
+            } else {
+                // should probably do something....
             }
         } catch (IllegalAccessException err) {
             err.printStackTrace();
@@ -96,11 +107,13 @@ public class MenuController {
             Class<?> klass = getCurrentField().getType();
             String value = f.get(null).toString();
 
-            if (klass.equals(Integer.class)) {
+            if (klass.equals(Integer.TYPE)) {
                 f.setInt(null, Integer.parseInt(value) + 1);
-            } else if (klass.equals(Double.class)) {
+            } else if (klass.equals(Long.TYPE)) {
+                f.setLong(null, Long.parseLong(value) + 1);
+            } else if (klass.equals(Double.TYPE)) {
                 f.setDouble(null, Double.parseDouble(value) + 0.05);
-            } else if (klass.equals(Boolean.class)) {
+            } else if (klass.equals(Boolean.TYPE)) {
                 f.setBoolean(null, !Boolean.parseBoolean(value));
             }
         } catch (IllegalAccessException err) {
@@ -114,12 +127,16 @@ public class MenuController {
             Class<?> klass = getCurrentField().getType();
             String value = f.get(null).toString();
 
-            if (klass.equals(Integer.class)) {
+            if (klass.equals(Integer.TYPE)) {
                 f.setInt(null, (int) Math.round(v));
-            } else if (klass.equals(Double.class)) {
+            } else if (klass.equals(Long.TYPE)) {
+                f.setLong(null, Math.round(v));
+            } else if (klass.equals(Double.TYPE)) {
                 f.setDouble(null, v);
-            } else if (klass.equals(Boolean.class)) {
+            } else if (klass.equals(Boolean.TYPE)) {
                 f.setBoolean(null, Math.abs(v) > 0.25);
+            } else {
+                f.set(null, v);
             }
         } catch (IllegalAccessException err) {
             err.printStackTrace();

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import org.firstinspires.ftc.robotcore.external.Consumer;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,12 +23,12 @@ import java.util.Vector;
 
 public class ConstantsBase {
 
-    protected String getFileName() {
-        File file = new File(Base10262.getContext().getFilesDir(), "calibration.properties");
+    public static String getFileName() {
+        File file = new File("/sdcard", "calibration.properties");
         return file.getAbsolutePath();
     }
 
-    private String getResolvedFileName() {
+    private static String getResolvedFileName() {
         return getFileName().replaceFirst("^~", System.getProperty("user.home"));
     }
 
@@ -71,16 +72,14 @@ public class ConstantsBase {
         OutputStream output = null;
 
         try {
-            output = new FileOutputStream(getResolvedFileName());
-            Writer writer = new OutputStreamWriter(output);
-
+            (new File(getResolvedFileName())).delete();
             withEachStaticField(new Consumer<Field>() {
                 @Override
                 public void accept(Field f) {
                     String name = f.getName();
                     Object value = null;
                     try {
-                        value = f.get(this);
+                        value = f.get(null);
                         data.setProperty(name, value.toString());
                     } catch (Exception e) {
                         System.err.println("Unable to get value for " + name);
@@ -90,6 +89,8 @@ public class ConstantsBase {
             });
 
             // save properties to project root folder
+            output = new FileOutputStream(getResolvedFileName());
+            Writer writer = new OutputStreamWriter(output);
             data.store(writer, "FTC Calibration Constants");
 
         } catch (IOException io) {
@@ -109,11 +110,13 @@ public class ConstantsBase {
         try {
             Class<?> klass = f.getType();
             if (value != null) {
-                if (klass.equals(Integer.class)) {
+                if (klass.equals(Integer.TYPE)) {
                     f.setInt(this, Integer.parseInt(value));
-                } else if (klass.equals(Double.class)) {
+                } else if (klass.equals(Long.TYPE)) {
+                    f.setLong(this, Long.parseLong(value));
+                } else if (klass.equals(Double.TYPE)) {
                     f.setDouble(this, Double.parseDouble(value));
-                } else if (klass.equals(Boolean.class)) {
+                } else if (klass.equals(Boolean.TYPE)) {
                     f.setBoolean(this, Boolean.parseBoolean(value));
                 } else {
                     f.set(this, value);
@@ -140,8 +143,9 @@ public class ConstantsBase {
                 }
             });
 
-    } catch (FileNotFoundException err) {
-            (new ConstantsBase()).writeToFile();
+        } catch (FileNotFoundException err) {
+            // (new ConstantsBase()).writeToFile();
+            // do nothing here
         } catch (Exception err) {
             err.printStackTrace();
         } finally {
@@ -154,5 +158,4 @@ public class ConstantsBase {
             }
         }
     }
-
 }

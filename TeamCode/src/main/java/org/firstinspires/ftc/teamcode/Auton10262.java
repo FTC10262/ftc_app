@@ -5,6 +5,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -26,7 +27,7 @@ import static org.firstinspires.ftc.teamcode.Auton10262.State.*;
  * AutonDrive Mode
  * <p>
  */
-@Autonomous(name="Auton", group="Pioneer 10262")
+@Disabled
 public class Auton10262 extends Base10262 {
     protected BNO055IMU imu;
 

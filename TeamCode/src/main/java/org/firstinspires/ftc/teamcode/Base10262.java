@@ -58,7 +58,7 @@ public class Base10262 extends OpMode {
     @Override
     public void init() {
         appContext = hardwareMap.appContext;
-        new Calibration10262();
+        new Calibration10262().readFromFile();
 
         left_drive = hardwareMap.dcMotor.get("left drive");
         right_drive = hardwareMap.dcMotor.get("right drive");
@@ -97,7 +97,7 @@ public class Base10262 extends OpMode {
         jewel_arm = hardwareMap.servo.get("jewel arm");
         jewel_color = hardwareMap.get(ColorSensor.class, "jewel color");
 
-        menu_controller = new MenuController();
+        menu_controller = new MenuController(new Calibration10262());
     }
 
     @Override

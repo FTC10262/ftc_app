@@ -54,7 +54,5 @@ public class Calibration10262 extends ConstantsBase {
     public static double RAMP_DRIVE_DURATION = 0.0015;
     public static long TRAY_RAMP_DURATION = 750;
 
-    public Calibration10262() {
-        readFromFile();
-    }
+    public Calibration10262() {}
 }

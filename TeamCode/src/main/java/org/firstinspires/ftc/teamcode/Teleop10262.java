@@ -5,11 +5,13 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /**
  * ArcadeDrive Mode
  * <p>
  */
-@TeleOp(name="Teleop 10262", group="FTC 10262")
+@TeleOp(name="Teleop10262", group="Teleop")
 public class Teleop10262 extends Base10262 {
 
     private int counter = 0;
