@@ -91,39 +91,43 @@ public class Auton10262 extends Base10262 {
         time = new ElapsedTime();
 
         // spin up a thread for slow initialization
-        new Thread(new Runnable() {
+        if (Calibration10262.INITIALIZE_IMU || Calibration10262.INITIALIZE_VUFORIA) {
+            new Thread(new Runnable() {
 
-            @Override
-            public void run() {
-                {
-                    imu = hardwareMap.get(BNO055IMU.class, "imu");
-                    BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-                    parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-                    parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-                    parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-                    parameters.loggingEnabled = true;
-                    parameters.loggingTag = "IMU";
-                    parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-                    imu.initialize(parameters);
-                    imu_initialized = true;
+                @Override
+                public void run() {
+                    if (Calibration10262.INITIALIZE_IMU) {
+                        imu = hardwareMap.get(BNO055IMU.class, "imu");
+                        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+                        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+                        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+                        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+                        parameters.loggingEnabled = true;
+                        parameters.loggingTag = "IMU";
+                        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+                        imu.initialize(parameters);
+                        imu_initialized = true;
+                    }
+
+                    if (Calibration10262.INITIALIZE_VUFORIA) {
+                        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+                        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+                        parameters.vuforiaLicenseKey = "AXANIyj/////AAAAGbHilBoK6UXQvL1QhufpB9EqnBPl75GN7vP41Y2fMWlDmzLrT4uM/25OLcSHCqijv//NkSz2ERUFGSbvhudYTATEbCbRBB+NOUV5qYaKV7lBk8jy9zzHLeSo5c0NageZDO2kiVyJKppbIoBsm6YErTsHA3VEadrVRll0TOJQw/5p2ibisCmyP/M1OuY49Q+pNqpLF/3gL0wWKDk/0ceM5+84oZoB8GkQE0NIDF2qEmmnLNhafUnCvTcCiblVkeZUiORTRYm2vNBpFRdwKTMBQ8j++NQvB7KIaepGwM2T/budWOCrBEVyKoQ7UcWNM9WXXa57fLo1HfzDiacyekH1dpcHCf3W+cN5BpODJ2WxOMNw";
+
+                        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+                        vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+
+                        relicTrackables = vuforia.loadTrackablesFromAsset("RelicVuMark");
+                        relicTemplate = relicTrackables.get(0);
+                        relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
+
+                        relicTrackables.activate();
+                        vuforia_initialized = true;
+                    }
                 }
-
-                int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-                VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-
-                parameters.vuforiaLicenseKey = "AXANIyj/////AAAAGbHilBoK6UXQvL1QhufpB9EqnBPl75GN7vP41Y2fMWlDmzLrT4uM/25OLcSHCqijv//NkSz2ERUFGSbvhudYTATEbCbRBB+NOUV5qYaKV7lBk8jy9zzHLeSo5c0NageZDO2kiVyJKppbIoBsm6YErTsHA3VEadrVRll0TOJQw/5p2ibisCmyP/M1OuY49Q+pNqpLF/3gL0wWKDk/0ceM5+84oZoB8GkQE0NIDF2qEmmnLNhafUnCvTcCiblVkeZUiORTRYm2vNBpFRdwKTMBQ8j++NQvB7KIaepGwM2T/budWOCrBEVyKoQ7UcWNM9WXXa57fLo1HfzDiacyekH1dpcHCf3W+cN5BpODJ2WxOMNw";
-
-                parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-                vuforia = ClassFactory.createVuforiaLocalizer(parameters);
-
-                relicTrackables = vuforia.loadTrackablesFromAsset("RelicVuMark");
-                relicTemplate = relicTrackables.get(0);
-                relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
-
-                relicTrackables.activate();
-                vuforia_initialized = true;
-            }
-        });
+            });
+        }
         counter = 1;
     }
 
