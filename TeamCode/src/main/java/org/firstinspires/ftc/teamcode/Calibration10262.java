@@ -40,8 +40,8 @@ public class Calibration10262 extends ConstantsBase {
     public static double RAMP_DRIVE_DURATION = 0.0012;
     public static long TRAY_RAMP_DURATION = 750;
 
-    public static boolean INITIALIZE_IMU = false;
-    public static boolean INITIALIZE_VUFORIA = false;
+    public static boolean INITIALIZE_IMU = true;
+    public static boolean INITIALIZE_VUFORIA = true;
     public static double TURN_LIMITER = 0.8;
     public static double JEWEL_KICK_BACK = 0.25;
     public static double JEWEL_KICK_FORWARD = 0.75;

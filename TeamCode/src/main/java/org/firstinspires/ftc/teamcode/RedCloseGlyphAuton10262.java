@@ -4,7 +4,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import static org.firstinspires.ftc.teamcode.Auton10262.State.DONE;
+import static org.firstinspires.ftc.teamcode.Auton10262.State.ALIGN_TO_CRYTO_BOX;
 import static org.firstinspires.ftc.teamcode.Auton10262.State.STOP;
 
 /**
