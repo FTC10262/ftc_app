@@ -45,6 +45,7 @@ public class Auton10262 extends Base10262 {
         RAMP_UP,
         DRIVE,
         RAMP_DOWN,
+        ALIGN_TO_CRYTO_BOX,
         STOP,
         FINISHED
     };

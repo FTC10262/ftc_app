@@ -75,7 +75,7 @@ public class Teleop10262 extends Base10262 {
     public void loop() {
         arcadeDrive(
                 gamepad1.right_trigger + gamepad1.left_trigger * -1,
-                 -gamepad1.left_stick_x,
+                 -gamepad1.left_stick_x * Calibration10262.TURN_LIMITER,
                 true);
 
         collector_loop();
@@ -126,7 +126,7 @@ public class Teleop10262 extends Base10262 {
     protected void tray_loop() {
         switch (tray_state) {
             case DEPLOYED:
-                if (gamepad2.dpad_down || gamepad2.dpad_left || gamepad2.dpad_right) {
+                if (gamepad2.dpad_down) {
                     close_tray();
                     tray_state = TrayState.TO_DRIVE;
                 }
@@ -140,10 +140,11 @@ public class Teleop10262 extends Base10262 {
                     close_tray();
                     tray_state = TrayState.TO_COLLECT;
                 }
+                setMaxSpeed(1.0);
                 break;
 
             case COLLECTING:
-                if (gamepad2.dpad_up || gamepad2.dpad_left || gamepad2.dpad_right) {
+                if (gamepad2.dpad_up) {
                     close_tray();
                     tray_state = TrayState.TO_DRIVE;
                     tray_timer.reset();
@@ -172,6 +173,7 @@ public class Teleop10262 extends Base10262 {
             case TO_DEPLOY:
                 tray_ramp.reset(tray_position(), Calibration10262.TRAY_DEPLOY_POSITION, Calibration10262.TRAY_RAMP_DURATION);
                 tray_state = TrayState.DEPLOYED;
+                setMaxSpeed(0.5);
                 break;
 
             case TO_COLLECT:

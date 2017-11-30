@@ -37,6 +37,9 @@ public class Base10262 extends OpMode {
 
     protected static Servo jewel_arm = null;
     protected static ColorSensor jewel_color = null;
+    protected static Servo jewel_kicker = null;
+
+    private double maxSpeed = 1;
 
     protected enum TrayState {
         DEPLOYED, DRIVING, COLLECTING, TO_DRIVE,
@@ -95,6 +98,7 @@ public class Base10262 extends OpMode {
         right_pinch.setDirection(Servo.Direction.REVERSE);
 
         jewel_arm = hardwareMap.servo.get("jewel arm");
+        jewel_kicker = hardwareMap.servo.get("jewel kicker");
         jewel_color = hardwareMap.get(ColorSensor.class, "jewel color");
 
         menu_controller = new MenuController(new Calibration10262());
@@ -200,6 +204,10 @@ public class Base10262 extends OpMode {
         return num;
     }
 
+    protected void setMaxSpeed(double val) {
+        maxSpeed = val;
+    }
+
     protected static double ramp(double oldVal, double newVal, double maxRamp) {
         double delta = newVal - oldVal;
         if (delta > maxRamp) {
@@ -240,8 +248,8 @@ public class Base10262 extends OpMode {
         double leftMotorSpeed;
         double rightMotorSpeed;
 
-        moveValue = limit(moveValue);
-        rotateValue = limit(rotateValue);
+        moveValue = limit(moveValue, maxSpeed);
+        rotateValue = limit(rotateValue, maxSpeed);
 
         if (squaredInputs) {
             // square the inputs (while preserving the sign) to increase fine control
@@ -277,6 +285,10 @@ public class Base10262 extends OpMode {
         }
 
         set_drive_power(leftMotorSpeed, rightMotorSpeed);
+    }
+
+    private double limit(double maxSpeed, double val) {
+        return limit(-maxSpeed, maxSpeed, val);
     }
 
 }

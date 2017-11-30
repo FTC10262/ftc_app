@@ -37,7 +37,7 @@ public class RedAuton10262 extends Auton10262 {
 
             case FOUND_RED_JEWEL:
                 if (time_in_state < Calibration10262.GEM_DRIVE_DURATION) {
-                    set_drive_power(-0.3, -0.3);
+                    jewel_kicker.setPosition(Calibration10262.JEWEL_KICK_BACK);
                 } else {
                     state = RAISE_ARM;
                 }
@@ -45,33 +45,34 @@ public class RedAuton10262 extends Auton10262 {
 
             case FOUND_BLUE_JEWEL:
                 if (time_in_state < Calibration10262.GEM_DRIVE_DURATION) {
-                    set_drive_power(0.3, 0.3);
+                    jewel_kicker.setPosition(Calibration10262.JEWEL_KICK_FORWARD);
                 } else {
                     state = RAISE_ARM;
                 }
                 break;
 
             case RAISE_ARM:
+                jewel_kicker.setPosition(Calibration10262.JEWEL_KICK_CENTER);
                 super.handleState(state, time_in_state);
                 state = RAMP_UP;
                 break;
 
             case RAMP_UP:
-                if (time_in_state > Calibration10262.RAMP_TIME) {
+                if (time_in_state > Calibration10262.AUTON_DRIVE_RAMP_TIME) {
                     state = State.RAMP_DOWN;
                 } else {
-                    double percent = time_in_state / Calibration10262.RAMP_TIME;
-                    double power = Calibration10262.DRIVE_SPEED * percent;
+                    double percent = time_in_state / Calibration10262.AUTON_DRIVE_RAMP_TIME;
+                    double power = Calibration10262.AUTON_DRIVE_SPEED * percent;
                     set_drive_power(-power, -power);
                 }
                 break;
 
             case RAMP_DOWN:
-                if (time_in_state > Calibration10262.RAMP_TIME) {
+                if (time_in_state > Calibration10262.AUTON_DRIVE_RAMP_TIME) {
                     state = State.STOP;
                 } else {
-                    double percent = 1.0 - (time_in_state / Calibration10262.RAMP_TIME);
-                    double power = Calibration10262.DRIVE_SPEED * percent;
+                    double percent = 1.0 - (time_in_state / Calibration10262.AUTON_DRIVE_RAMP_TIME);
+                    double power = Calibration10262.AUTON_DRIVE_SPEED * percent;
                     set_drive_power(-power, -power);
                 }
                 break;
