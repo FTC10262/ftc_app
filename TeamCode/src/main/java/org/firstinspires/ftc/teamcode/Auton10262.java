@@ -30,6 +30,9 @@ import static org.firstinspires.ftc.teamcode.Auton10262.State.*;
 @Disabled
 public class Auton10262 extends Base10262 {
     protected BNO055IMU imu;
+    private double heading_zero = 0;
+    protected TimeRampValue kicker_ramp;
+    protected boolean enterState = false;
 
     enum State {
         BEGIN,
@@ -46,11 +49,37 @@ public class Auton10262 extends Base10262 {
         DRIVE,
         RAMP_DOWN,
         ALIGN_TO_CRYTO_BOX,
+        BACKWARD,
+        FORWARD,
+        FORWARD0,
+        FORWARD1,
+        FORWARD2,
+        BACKWARD1,
+        BACKWARD2,
+
+        COLLECT_DRIVE,
+        NADER_BACKOFF,
+        NADER_BACKOFF2,
+        ADJUST_TRAY1,
+        FORWARD3,
+        ADJUST_TRAY2,
+        RELEASE_TRAY,
+        FORWARD4,
+
+        TURN1,
+        TURN2,
+        PUSH_GLYPH,
+        ROTATE90,
+        COUNTER_ROTATE90,
+        ROTATE_TO,
+        COUNTER_ROTATE_TO,
+        BACKOFF,
         STOP,
+        DONE,
         FINISHED
     };
 
-    protected Orientation imu_data;
+    private Orientation imu_data;
 
     protected VuforiaLocalizer vuforia;
     protected VuforiaTrackables relicTrackables;
@@ -71,9 +100,13 @@ public class Auton10262 extends Base10262 {
     private boolean imu_initialized = false;
     private boolean looking_for_vumark = false;
     protected VuforiaData vuforia_data = new VuforiaData();
-
+    protected double heading_at_start_of_state = 0;
 
     private State current_state = BEGIN;
+    protected State exit_state = STOP;
+    protected double drive_speed = 0;
+    protected double drive_time = 0;
+    protected double rotate_to = 0;
     private ElapsedTime time;
     private long counter = 0;
 
@@ -91,24 +124,20 @@ public class Auton10262 extends Base10262 {
         current_state = BEGIN;
         time = new ElapsedTime();
 
+        kicker_ramp= new TimeRampValue(Calibration10262.JEWEL_KICK_CENTER, Calibration10262.JEWEL_KICK_CENTER, 1,
+                new Rampable() {
+                    @Override
+                    public void tick(double value) {
+                        jewel_kicker.setPosition(value);
+                    }
+                });
+
         // spin up a thread for slow initialization
         if (Calibration10262.INITIALIZE_IMU || Calibration10262.INITIALIZE_VUFORIA) {
             new Thread(new Runnable() {
 
                 @Override
                 public void run() {
-                    if (Calibration10262.INITIALIZE_IMU) {
-                        imu = hardwareMap.get(BNO055IMU.class, "imu");
-                        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-                        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-                        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-                        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-                        parameters.loggingEnabled = true;
-                        parameters.loggingTag = "IMU";
-                        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-                        imu.initialize(parameters);
-                        imu_initialized = true;
-                    }
 
                     if (Calibration10262.INITIALIZE_VUFORIA) {
                         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -129,6 +158,20 @@ public class Auton10262 extends Base10262 {
                 }
             });
         }
+
+        if (Calibration10262.INITIALIZE_IMU) {
+            BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+            parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+            parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+            // parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+            // parameters.loggingEnabled = true;
+            // parameters.loggingTag = "IMU";
+            // parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+            imu = hardwareMap.get(BNO055IMU.class, "imu");
+            imu.initialize(parameters);
+            imu_initialized = true;
+        }
+
         counter = 1;
     }
 
@@ -181,8 +224,23 @@ public class Auton10262 extends Base10262 {
 
     private void imu_loop() {
         if (imu_initialized) {
-            Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            imu_data = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         }
+    }
+
+    protected void reset_heading() {
+        heading_zero = raw_heading();
+    }
+
+    protected double raw_heading() {
+        if (imu_initialized && imu_data != null) {
+            return imu_data.firstAngle;
+        }
+        return 0;
+    }
+
+    protected double heading() {
+        return -AngleUnit.normalizeDegrees(raw_heading() - heading_zero);
     }
 
     protected State handleState(State state, double time_in_state) {
@@ -192,7 +250,7 @@ public class Auton10262 extends Base10262 {
                 break;
 
             case LOWER_ARM:
-                jewel_arm.setPosition(Calibration10262.COLOR_SENSOR_POS_DOWN);
+                jewel_arm.setPosition(Calibration10262.JEWEL_ARM_DEPLOYED);
                 if (time_in_state > 1.0) {
                     return WAIT_FOR_COLOR_SENSOR;
                 }
@@ -211,6 +269,12 @@ public class Auton10262 extends Base10262 {
                     return FOUND_BLUE_JEWEL;
                 }
 
+            case FOUND_BLUE_JEWEL:
+                break;
+
+            case FOUND_RED_JEWEL:
+                break;
+
             case KNOCK_BLUE_JEWEL:
                 break;
 
@@ -218,19 +282,143 @@ public class Auton10262 extends Base10262 {
                 break;
 
             case RAISE_ARM:
-                jewel_arm.setPosition(Calibration10262.COLOR_SENSOR_POS_UP);
+                jewel_arm.setPosition(Calibration10262.JEWEL_ARM_RETRACTED);
+                jewel_kicker.setPosition(Calibration10262.JEWEL_KICK_CENTER);
+                state = RAMP_UP;
+                exit_state = State.DONE;
+                drive_time = Calibration10262.AUTON_DRIVE_RAMP_TIME;
+                drive_speed = Calibration10262.AUTON_DRIVE_SPEED;
                 break;
 
             case REALIGN_ROBOT:
                 break;
 
-            case RAMP_UP:
-                break;
-
             case DRIVE:
                 break;
 
+            case ALIGN_TO_CRYTO_BOX:
+                break;
+
+            case BACKWARD:
+                break;
+
+            case FORWARD:
+                if (time_in_state < (drive_time / 2)) {
+                    // ramping up
+                    double percent = time_in_state / (drive_time / 2);
+                    set_drive_power(drive_speed * percent, drive_speed * percent);
+                } else if (time_in_state < drive_time) {
+                    double percent = (time_in_state - drive_time / 2) / (drive_time / 2);
+                    set_drive_power(drive_speed * percent, drive_speed * percent);
+                } else {
+                    set_drive_power(0,0);
+                    state = exit_state;
+                }
+                break;
+
+            case FORWARD1:
+                break;
+
+            case FORWARD2:
+                break;
+
+            case BACKWARD1:
+                break;
+
+            case BACKWARD2:
+                break;
+
+            case TURN1:
+                break;
+
+            case TURN2:
+                break;
+
+            case PUSH_GLYPH:
+                if (time_in_state < Calibration10262.GLYPH_EJECT_TIME) {
+                    left_intake.setPower(Calibration10262.GLYPH_EJECT_POWER);
+                    right_intake.setPower(-Calibration10262.GLYPH_EJECT_POWER * 2);
+                } else {
+                    left_intake.setPower(0);
+                    right_intake.setPower(0);
+                    state = BACKOFF;
+                }
+                break;
+
+            case ROTATE90: {
+                double offset = AngleUnit.normalizeDegrees(AngleUnit.normalizeDegrees(heading_at_start_of_state + 90) - heading());
+                telemetry.addData("Rotate90:", offset);
+                if (Math.abs((heading_at_start_of_state + 90) - heading()) < Calibration10262.ROTATION_EPSILON) {
+                    state = exit_state;
+                    set_drive_power(0, 0);
+                } else {
+                    set_drive_power(Calibration10262.ROTATION_SPEED, -Calibration10262.ROTATION_SPEED);
+                }
+                break;
+            }
+
+            case COUNTER_ROTATE90:
+                if (Math.abs((heading_at_start_of_state - 90) - heading()) < Calibration10262.ROTATION_EPSILON) {
+                    state = exit_state;
+                    set_drive_power(0,0);
+                } else {
+                    set_drive_power(-Calibration10262.ROTATION_SPEED, Calibration10262.ROTATION_SPEED);
+                }
+                break;
+
+            case ROTATE_TO: {
+                double offset = AngleUnit.normalizeDegrees(rotate_to - heading());
+                telemetry.addData("ROTATE_TO:", offset);
+                if (Math.abs(offset) < Calibration10262.ROTATION_EPSILON) {
+                    state = exit_state;
+                    set_drive_power(0, 0);
+                } else {
+                    set_drive_power(Calibration10262.ROTATION_SPEED, -Calibration10262.ROTATION_SPEED);
+                }
+                break;
+            }
+
+            case COUNTER_ROTATE_TO: {
+                double offset = AngleUnit.normalizeDegrees(heading() - rotate_to);
+                telemetry.addData("COUNTER ROTATE_TO:", offset);
+                if (Math.abs(offset) < Calibration10262.ROTATION_EPSILON) {
+                    state = exit_state;
+                    set_drive_power(0, 0);
+                } else {
+                    set_drive_power(-Calibration10262.ROTATION_SPEED, Calibration10262.ROTATION_SPEED);
+                }
+                break;
+            }
+
+            case BACKOFF:
+                set_drive_power(-Calibration10262.BACKOFF_SPEED, -Calibration10262.BACKOFF_SPEED);
+                if (time_in_state > Calibration10262.BACKOFF_TIME) {
+                    state = STOP;
+                }
+                break;
+
+            case RAMP_UP:
+                if (time_in_state > drive_time) {
+                    state = State.RAMP_DOWN;
+                } else {
+                    double percent = time_in_state / drive_time;
+                    double power = drive_speed * percent;
+                    set_drive_power(power, power);
+                }
+                break;
+
             case RAMP_DOWN:
+                if (time_in_state > drive_time) {
+                    state = exit_state;
+                } else {
+                    double percent = 1.0 - (time_in_state / drive_time);
+                    double power = drive_speed * percent;
+                    set_drive_power(power, power);
+                }
+                break;
+
+            case DONE:
+                state = STOP;
                 break;
 
             case STOP:
@@ -243,6 +431,26 @@ public class Auton10262 extends Base10262 {
 
         return state;
     }
+
+    public void resetState() {
+        time.reset();
+        heading_at_start_of_state = heading();
+    }
+
+    public void resetState(State state) {
+        time.reset();
+        heading_at_start_of_state = heading();
+        current_state = state;
+    }
+
+    @Override
+    public void start() {
+        super.start();
+        states = "start";
+        reset_heading();
+    }
+
+    private String states = "";
 
     @Override
     public void loop() {
@@ -257,12 +465,18 @@ public class Auton10262 extends Base10262 {
         telemetry.addData("State:", "pre " + current_state + " / " + counter);
         State new_state = handleState(current_state, elapsed);
         telemetry.addData("State:", "post " + current_state + " / " + counter);
+        telemetry.addData("Heading:", heading());
+        telemetry.addData("history:", states);
 
         counter += 1;
 
         if (new_state != current_state) {
-            time.reset();
+            resetState();
+            enterState = true;
+            states += "," + new_state;
             current_state = new_state;
+        } else {
+            enterState = false;
         }
     }
 

@@ -5,8 +5,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-
 /**
  * ArcadeDrive Mode
  * <p>
@@ -59,23 +57,29 @@ public class Teleop10262 extends Base10262 {
 
         tray_state = TrayState.COLLECTING;
         in_wiggle = false;
-    }
-
-    @Override
-    public void init_loop() {
-        super.init_loop();
 
         // Do these in init_loop so we can see the adjustments
         set_tray_angle(Calibration10262.TRAY_COLLECT_POSITION);
         open_tray();
         jewel_arm.setPosition(Calibration10262.JEWEL_ARM_RETRACTED);
+        jewel_kicker.setPosition(Calibration10262.JEWEL_KICK_CENTER);
+    }
+
+    @Override
+    public void init_loop() {
+        super.init_loop();
     }
 
     @Override
     public void loop() {
+        double backward = 1;
+        if (gamepad1.b) {
+            backward = -1;
+        }
+
         arcadeDrive(
-                gamepad1.right_trigger + gamepad1.left_trigger * -1,
-                 -gamepad1.left_stick_x * Calibration10262.TURN_LIMITER,
+                (gamepad1.right_trigger + gamepad1.left_trigger * -1) * backward,
+                (-gamepad1.left_stick_x * Calibration10262.TURN_LIMITER) * backward,
                 true);
 
         collector_loop();
@@ -148,6 +152,12 @@ public class Teleop10262 extends Base10262 {
                     close_tray();
                     tray_state = TrayState.TO_DRIVE;
                     tray_timer.reset();
+//                } else if (gamepad2.dpad_down) {
+//                    if (tray_position() == Calibration10262.TRAY_COLLECT_POSITION) {
+//                        tray_ramp.reset(tray_position(), Calibration10262.TRAY_COLLECT_POSITION + 0.2, Calibration10262.TRAY_RAMP_DURATION);
+//                    } else {
+//                        tray_ramp.reset(tray_position(), Calibration10262.TRAY_COLLECT_POSITION, Calibration10262.TRAY_RAMP_DURATION);
+//                    }
                 }
                 break;
 
@@ -165,7 +175,7 @@ public class Teleop10262 extends Base10262 {
 
             case TO_DRIVE:
                 if (tray_timer.seconds() > 0.5) {
-                    tray_ramp.reset(tray_position(), Calibration10262.TRAY_DRIVE_POSTION, Calibration10262.TRAY_RAMP_DURATION);
+                    tray_ramp.reset(tray_position(), Calibration10262.TRAY_DRIVE_POSITION, Calibration10262.TRAY_RAMP_DURATION);
                     tray_state = TrayState.DRIVING;
                 }
                 break;
@@ -173,6 +183,9 @@ public class Teleop10262 extends Base10262 {
             case TO_DEPLOY:
                 tray_ramp.reset(tray_position(), Calibration10262.TRAY_DEPLOY_POSITION, Calibration10262.TRAY_RAMP_DURATION);
                 tray_state = TrayState.DEPLOYED;
+                if (gamepad1.b) {
+                    setMaxSpeed(0.25);
+                }
                 setMaxSpeed(0.5);
                 break;
 
@@ -190,7 +203,7 @@ public class Teleop10262 extends Base10262 {
         tray_ramp.loop();
 
         telemetry.addData("pinch:", "" + left_pinch.getPosition() + " / " + right_pinch.getPosition());
-        telemetry.addData("tray: ", tray_position());
+        telemetry.addData("tray: ", "" + tray_state + ": " + tray_position());
     }
 
     protected void pinch_loop() {
@@ -207,13 +220,13 @@ public class Teleop10262 extends Base10262 {
                     break;
 
                 case SHIFT_LEFT:
-                    left_pinch.setPosition(Calibration10262.TRAY_PINCH_CLOSE);
-                    right_pinch.setPosition(Calibration10262.TRAY_PINCH_OPEN);
+                    left_pinch.setPosition(Calibration10262.TRAY_PINCH_CLOSE_LEFT);
+                    right_pinch.setPosition(Calibration10262.TRAY_PINCH_OPEN_RIGHT);
                     break;
 
                 case SHIFT_RIGHT:
-                    left_pinch.setPosition(Calibration10262.TRAY_PINCH_OPEN);
-                    right_pinch.setPosition(Calibration10262.TRAY_PINCH_CLOSE);
+                    left_pinch.setPosition(Calibration10262.TRAY_PINCH_OPEN_LEFT);
+                    right_pinch.setPosition(Calibration10262.TRAY_PINCH_CLOSE_RIGHT);
                     break;
 
                 case CLOSED:

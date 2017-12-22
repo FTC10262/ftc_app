@@ -31,48 +31,29 @@ public class BlueAuton10262 extends Auton10262 {
     protected State handleState(State state, double time_in_state) {
         switch (state) {
             case BEGIN:
+                reset_heading();
                 state = LOWER_ARM;
                 break;
 
             case FOUND_BLUE_JEWEL:
+                if (enterState) {
+                    kicker_ramp.reset(jewel_kicker.getPosition(), Calibration10262.JEWEL_KICK_BACK, (long) (Calibration10262.GEM_DRIVE_DURATION * 1000));
+                }
                 if (time_in_state < Calibration10262.GEM_DRIVE_DURATION) {
-                    jewel_kicker.setPosition(Calibration10262.JEWEL_KICK_BACK);
+                    kicker_ramp.loop();
                 } else {
                     state = RAISE_ARM;
                 }
                 break;
 
             case FOUND_RED_JEWEL:
+                if (enterState) {
+                    kicker_ramp.reset(jewel_kicker.getPosition(), Calibration10262.JEWEL_KICK_FORWARD, (long) (Calibration10262.GEM_DRIVE_DURATION * 1000));
+                }
                 if (time_in_state < Calibration10262.GEM_DRIVE_DURATION) {
-                    jewel_kicker.setPosition(Calibration10262.JEWEL_KICK_FORWARD);
+                    kicker_ramp.loop();
                 } else {
                     state = RAISE_ARM;
-                }
-                break;
-
-            case RAISE_ARM:
-                super.handleState(state, time_in_state);
-                jewel_kicker.setPosition(Calibration10262.JEWEL_KICK_CENTER);
-                state = RAMP_UP;
-                break;
-
-            case RAMP_UP:
-                if (time_in_state > Calibration10262.AUTON_DRIVE_RAMP_TIME) {
-                    state = State.RAMP_DOWN;
-                } else {
-                    double percent = time_in_state / Calibration10262.AUTON_DRIVE_RAMP_TIME;
-                    double power = Calibration10262.AUTON_DRIVE_SPEED * percent;
-                    set_drive_power(power, power);
-                }
-                break;
-
-            case RAMP_DOWN:
-                if (time_in_state > Calibration10262.AUTON_DRIVE_RAMP_TIME) {
-                    state = State.STOP;
-                } else {
-                    double percent = 1.0 - (time_in_state / Calibration10262.AUTON_DRIVE_RAMP_TIME);
-                    double power = Calibration10262.AUTON_DRIVE_SPEED * percent;
-                    set_drive_power(power, power);
                 }
                 break;
 

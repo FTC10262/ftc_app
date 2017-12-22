@@ -67,12 +67,16 @@ public class ConstantsBase {
         });
     }
 
+    public void zapFile() {
+        (new File(getResolvedFileName())).delete();
+    }
+
     public void writeToFile() {
         final Properties data = new Properties();
         OutputStream output = null;
 
         try {
-            (new File(getResolvedFileName())).delete();
+            zapFile();
             withEachStaticField(new Consumer<Field>() {
                 @Override
                 public void accept(Field f) {

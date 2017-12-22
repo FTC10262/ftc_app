@@ -15,6 +15,8 @@ public class MenuController {
     private final ConstantsBase consts;
     private List<Field> menu_items;
     private int index = 0;
+    private boolean button_y_pressed;
+    private boolean button_x_pressed;
 
     public MenuController(ConstantsBase consts) {
         menu_items = (consts.getStaticFields());
@@ -49,6 +51,8 @@ public class MenuController {
 
             if (wasPressed) {
                 // de-bounce - do nothing
+                button_x_pressed = false;
+                button_y_pressed = false;
             } else if (gamepad.dpad_up) {
                 nextField();
             } else if (gamepad.dpad_down) {
@@ -69,14 +73,27 @@ public class MenuController {
                 telemetry.addData("Calibrate", "reload");
             } else if (Math.abs(gamepad.right_stick_x) > 0.1) {
                 setValue(gamepad.right_stick_x);
+            } else if (gamepad.x) {
+                button_x_pressed = true;
+            } else if (gamepad.y) {
+                button_y_pressed = true;
             }
+
             wasPressed = gamepad.dpad_down || gamepad.dpad_up || gamepad.dpad_right ||
                          gamepad.dpad_left || (gamepad.right_bumper && gamepad.left_bumper) ||
-                         gamepad.a || gamepad.b || gamepad.start;
+                         gamepad.a || gamepad.b || gamepad.start || gamepad.x || gamepad.y;
 
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean buttonX() {
+        return button_x_pressed;
+    }
+
+    public boolean buttonY() {
+        return button_y_pressed;
     }
 
     private void prevValue() {

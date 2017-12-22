@@ -4,9 +4,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import static org.firstinspires.ftc.teamcode.Auton10262.State.ALIGN_TO_CRYTO_BOX;
 import static org.firstinspires.ftc.teamcode.Auton10262.State.COUNTER_ROTATE_TO;
-import static org.firstinspires.ftc.teamcode.Auton10262.State.FORWARD;
 import static org.firstinspires.ftc.teamcode.Auton10262.State.FORWARD1;
 import static org.firstinspires.ftc.teamcode.Auton10262.State.FORWARD2;
 import static org.firstinspires.ftc.teamcode.Auton10262.State.PUSH_GLYPH;
@@ -21,13 +19,12 @@ import static org.firstinspires.ftc.teamcode.Auton10262.State.TURN2;
  * Close is Hard
  * <p>
  */
-@Autonomous(name="Red Close Glyph Auton 10262", group="Pioneer 10262")
-public class RedCloseGlyphAuton10262 extends RedAuton10262 {
-
+@Autonomous(name="Blue Close Glyph Auton 10262", group="Pioneer 10262")
+public class BlueCloseGlyphAuton10262 extends BlueAuton10262 {
     /**
      * Constructor
      */
-    public RedCloseGlyphAuton10262() {
+    public BlueCloseGlyphAuton10262() {
         // most if not all of your setup code
         // belongs in init, not here (see below)
     }

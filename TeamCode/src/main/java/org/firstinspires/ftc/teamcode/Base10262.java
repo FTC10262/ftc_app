@@ -16,7 +16,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Disabled()
 public class Base10262 extends OpMode {
     private static Context appContext;
-    protected MenuController menu_controller = null;
 
     // Make private to ensure that our set_power routine
     // is used and power ramping is implemented
@@ -101,12 +100,11 @@ public class Base10262 extends OpMode {
         jewel_kicker = hardwareMap.servo.get("jewel kicker");
         jewel_color = hardwareMap.get(ColorSensor.class, "jewel color");
 
-        menu_controller = new MenuController(new Calibration10262());
     }
 
     @Override
     public void init_loop() {
-        menu_controller.loop(telemetry, gamepad1);
+
     }
 
     @Override
@@ -134,6 +132,12 @@ public class Base10262 extends OpMode {
         stop_elevator();
     }
 
+    public void stop_all_motors() {
+        stop_intake();
+        stop_elevator();
+        set_drive_power(0,0);
+    }
+
     private void stop_intake() {
         left_intake.setPower(0);
         right_intake.setPower(0);
@@ -144,17 +148,19 @@ public class Base10262 extends OpMode {
         right_elevator.setPower(0);
     }
 
-    protected void set_tray_pinch(double pos) {
-        left_pinch.setPosition(pos);
-        right_pinch.setPosition(pos);
+    protected void set_tray_angle(double pos) {
+        left_tray_servo.setPosition(pos);
+        right_tray_servo.setPosition(pos);
     }
 
     protected void open_tray() {
-        set_tray_pinch(Calibration10262.TRAY_PINCH_OPEN);
+        left_pinch.setPosition(Calibration10262.TRAY_PINCH_OPEN_LEFT);
+        right_pinch.setPosition(Calibration10262.TRAY_PINCH_OPEN_RIGHT);
     }
 
     protected void wide_open_tray() {
-        set_tray_pinch(Calibration10262.TRAY_PINCH_WIDE_OPEN);
+        left_pinch.setPosition(Calibration10262.TRAY_PINCH_WIDE_OPEN_LEFT);
+        right_pinch.setPosition(Calibration10262.TRAY_PINCH_WIDE_OPEN_RIGHT);
     }
 
     private double tray_pinch() {
@@ -162,16 +168,17 @@ public class Base10262 extends OpMode {
     }
 
     protected boolean tray_open() {
-        return (tray_pinch() - Calibration10262.TRAY_PINCH_OPEN) < Calibration10262.TRAY_PINCH_EPSILON;
+        if (Math.abs(left_pinch.getPosition() - Calibration10262.TRAY_PINCH_OPEN_LEFT) < Calibration10262.TRAY_PINCH_EPSILON) {
+            if (Math.abs(right_pinch.getPosition() - Calibration10262.TRAY_PINCH_OPEN_RIGHT) < Calibration10262.TRAY_PINCH_EPSILON) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected void close_tray() {
-        set_tray_pinch(Calibration10262.TRAY_PINCH_CLOSE);
-    }
-
-    protected void set_tray_angle(double pos) {
-        left_tray_servo.setPosition(pos);
-        right_tray_servo.setPosition(pos);
+        left_pinch.setPosition(Calibration10262.TRAY_PINCH_CLOSE_LEFT);
+        right_pinch.setPosition(Calibration10262.TRAY_PINCH_CLOSE_RIGHT);
     }
 
     protected double tray_position() {
@@ -208,6 +215,10 @@ public class Base10262 extends OpMode {
         maxSpeed = val;
     }
 
+    protected double getMaxSpeed() {
+        return maxSpeed;
+    }
+
     protected static double ramp(double oldVal, double newVal, double maxRamp) {
         double delta = newVal - oldVal;
         if (delta > maxRamp) {
@@ -222,16 +233,19 @@ public class Base10262 extends OpMode {
     private double prevRightPower = 0;
     private long lastSetDrivePower = 0;
     protected void set_drive_power(double left, double right) {
-        if (Calibration10262.RAMP_DRIVE_POWER) {
-            final double maxChangePerMilliSecond = Calibration10262.RAMP_DRIVE_DURATION;
-            final long ticks = System.currentTimeMillis() - lastSetDrivePower;
-            final double maxRamp = Math.max(1, maxChangePerMilliSecond * ticks);
-
-            left = ramp(prevLeftPower, left, maxRamp);
-            right = ramp(prevRightPower, right, maxRamp);
-            prevLeftPower = left;
-            prevRightPower = right;
-        }
+        telemetry.addData("DRIVE: ", "" + left + "," + right);
+//        if (Calibration10262.RAMP_DRIVE_POWER) {
+//            final double maxChangePerMilliSecond = Calibration10262.RAMP_DRIVE_DURATION;
+//            final long ticks = System.currentTimeMillis() - lastSetDrivePower;
+//            final double maxRamp = Math.max(1, maxChangePerMilliSecond * ticks);
+//
+//            left = ramp(prevLeftPower, left, maxRamp);
+//            right = ramp(prevRightPower, right, maxRamp);
+//            prevLeftPower = left;
+//            prevRightPower = right;
+//        }
+        left = limit(-maxSpeed, maxSpeed, left);
+        right = limit(-maxSpeed, maxSpeed, right);
         this.left_drive.setPower(-left);
         this.right_drive.setPower(right);
     }
@@ -264,6 +278,8 @@ public class Base10262 extends OpMode {
             } else {
                 rotateValue = -(rotateValue * rotateValue);
             }
+//            moveValue = moveValue * moveValue * moveValue;
+//            rotateValue = rotateValue * rotateValue * rotateValue;
         }
 
         if (moveValue > 0.0) {
